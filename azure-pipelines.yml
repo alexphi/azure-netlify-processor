@@ -13,14 +13,14 @@ steps:
 - task: DotNetCoreInstaller@0
   displayName: 'Install dotnet'
   inputs:
-    version: '2.1.300'
+    version: '2.1.500'
     packageType: sdk
 
 - task: DotNetCoreCLI@2
   displayName: Build
   inputs:
     command: publish
-    projects: '**/.csproj'
+    projects: '**/*.csproj'
     arguments: '-c Release -o $(build.artifactstagingdirectory)/functionapp'
 
 - task: ArchiveFiles@2
