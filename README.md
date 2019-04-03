@@ -2,4 +2,6 @@
 
 Azure functions to fetch and process Netlify form submissions.
 
-Once processed, the submission data is stored in Table Storage and/or sent as a Sengrid templated email depending on a flag.
+The processing is basically mapping the site url/form name combo to an AzureQueue name to route the form data to.
+
+After a submission is successfully routed, it's deleted from Netlify.
