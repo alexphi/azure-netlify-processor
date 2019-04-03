@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Alejof.Netlify.Functions.Infrastructure;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
