@@ -4,18 +4,27 @@ namespace Alejof.Netlify.Settings
 {
     public class Factory
     {
-        public static FunctionSettings BuildFunctionSettings()
+        public static FunctionSettings Build()
         {
-            var getSetting = GetSettingFunc<FunctionSettings>();
+            var getNetlifySetting = GetPrefixedSettingFunc<NetlifySettings>();
 
             return new FunctionSettings
             {
-                NetlifyBaseUrl = getSetting("NetlifyBaseUrl"),
-                NetlifyAccessToken = getSetting("NetlifyAccessToken"),
+                StorageConnectionString = GetSetting("AzureWebJobsStorage"),
+
+                Netlify = new NetlifySettings
+                {
+                    BaseUrl = getNetlifySetting("BaseUrl"),
+                    AccessToken = getNetlifySetting("AccessToken"),
+                    Sites = getNetlifySetting("Sites"),
+                }
             };
         }
 
-        private static Func<string, string> GetSettingFunc<T>() => (
-            name => Environment.GetEnvironmentVariable($"{typeof(T).Name}_{name}", EnvironmentVariableTarget.Process));
+        private static string GetSetting(string name) =>
+            Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
+
+        private static Func<string, string> GetPrefixedSettingFunc<T>() =>
+            name => Environment.GetEnvironmentVariable($"{typeof(T).Name}_{name}", EnvironmentVariableTarget.Process);
     }
 }
