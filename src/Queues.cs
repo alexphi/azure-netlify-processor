@@ -1,4 +1,4 @@
-namespace Alejof.Netlify.Functions
+namespace Alejof.Netlify
 {
     public static class Queues
     {
