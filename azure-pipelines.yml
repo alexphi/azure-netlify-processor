@@ -16,12 +16,8 @@ steps:
     version: '2.1.500'
     packageType: sdk
 
-- task: DotNetCoreCLI@2
-  displayName: Build
-  inputs:
-    command: publish
-    projects: '**/.csproj'
-    arguments: '-c Release -o $(build.artifactstagingdirectory)/functionapp'
+- script: 'dotnet publish -c Release -o $(build.artifactstagingdirectory)/functionapp'
+  displayName: 'dotnet publish'
 
 - task: ArchiveFiles@2
   displayName: Archive
