@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace Alejof.Netlify.Models
 {
@@ -8,10 +9,12 @@ namespace Alejof.Netlify.Models
         public string SiteUrl { get; set; }
         public string FormName { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DataField[] Fields { get; set; }
+        public SubmissionField[] Fields { get; set; }
+
+        public string ValueOf(string fieldName) => Fields.FirstOrDefault(f => f.Name == fieldName)?.Value;
     }
 
-    public class DataField
+    public class SubmissionField
     {
         public string Name { get; set; }
         public string Value { get; set; }
