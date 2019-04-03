@@ -20,18 +20,19 @@ steps:
   displayName: Build
   inputs:
     command: publish
+    projects: '**/.csproj'
     arguments: '-c Release -o $(build.artifactstagingdirectory)/functionapp'
 
 - task: ArchiveFiles@2
-  displayName: "Archive"
+  displayName: Archive
   inputs:
     archiveType: zip
-    rootFolderOrFile: "$(build.artifactstagingdirectory)/functionapp"
+    rootFolderOrFile: '$(build.artifactstagingdirectory)/functionapp'
     includeRootFolder: false
     replaceExistingArchive: true
-    archiveFile: "$(build.artifactstagingdirectory)/funcapp.$(Build.BuildNumber).zip"
+    archiveFile: '$(build.artifactstagingdirectory)/funcapp.$(Build.BuildNumber).zip'
 
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: "$(build.artifactstagingdirectory)/funcapp.$(Build.BuildNumber).zip"
+    PathtoPublish: '$(build.artifactstagingdirectory)/funcapp.$(Build.BuildNumber).zip'
     ArtifactName: 'drop'

@@ -1,17 +1,14 @@
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Flurl;
-using Flurl.Http;
-using Microsoft.Azure.WebJobs;
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Collections;
-using Alejof.Netlify.Functions.Infrastructure;
-using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Flurl;
+using Flurl.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Azure.WebJobs;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Queue;
-using Newtonsoft.Json;
 using Alejof.Netlify.Functions.Extensions;
 
 namespace Alejof.Netlify.Functions.Impl
@@ -85,7 +82,7 @@ namespace Alejof.Netlify.Functions.Impl
             var tableClient = storageAccount.CreateCloudTableClient();
             var table = tableClient.GetTableReference(Tables.Mapping);
             var mapping = await table.RetrieveAsync<Models.SubmissionMappingEntity>(data.SiteUrl, data.FormName);
-            
+
             if (mapping == null)
             {
                 _log.LogWarning($"No queue mapping found for {data.SiteUrl}, form {data.FormName}");
