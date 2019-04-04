@@ -10,8 +10,6 @@ namespace Alejof.Netlify.Models
         public string FormName { get; set; }
         public DateTime CreatedAt { get; set; }
         public SubmissionField[] Fields { get; set; }
-
-        public string ValueOf(string fieldName) => Fields.FirstOrDefault(f => f.Name == fieldName)?.Value;
     }
 
     public class SubmissionField

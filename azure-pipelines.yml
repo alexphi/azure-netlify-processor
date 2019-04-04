@@ -13,7 +13,7 @@ steps:
 - task: DotNetCoreInstaller@0
   displayName: 'Install dotnet'
   inputs:
-    version: '2.1.500'
+    version: '2.2.202'
     packageType: sdk
 
 - script: 'dotnet publish -c Release -o $(build.artifactstagingdirectory)/functionapp'

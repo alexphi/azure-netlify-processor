@@ -82,7 +82,7 @@ namespace Alejof.Netlify.Functions.Impl
             var storageAccount = CloudStorageAccount.Parse(_settings.StorageConnectionString);
 
             var tableClient = storageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference(Tables.Mapping);
+            var table = tableClient.GetTableReference(Models.SubmissionMappingEntity.TableName);
             var mapping = await table.RetrieveAsync<Models.SubmissionMappingEntity>(data.SiteUrl, data.FormName);
 
             if (mapping == null)
