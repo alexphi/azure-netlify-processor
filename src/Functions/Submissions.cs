@@ -24,8 +24,6 @@ namespace Alejof.Netlify.Functions
         public static async Task RouteOnQueue(
             [QueueTrigger(Queues.Submissions)]Models.SubmissionData data, ILogger log)
         {
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-
             await BuildFunctionImpl(log)
                 .RouteSubmission(data);
         }

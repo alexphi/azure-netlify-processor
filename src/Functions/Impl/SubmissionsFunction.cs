@@ -53,8 +53,10 @@ namespace Alejof.Netlify.Functions.Impl
                         s => new Models.SubmissionData
                         {
                             Id = s.id,
-                            SiteUrl = s.site_url,
                             FormName = s.form_name,
+                            SiteUrl = ((string)s.site_url)
+                                .Replace("http://", string.Empty)
+                                .Replace("https://", string.Empty),
                             CreatedAt = s.created_at,
                             Fields = ((IEnumerable)s.ordered_human_fields)
                                 .Cast<dynamic>()
