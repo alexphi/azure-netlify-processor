@@ -6,6 +6,8 @@ namespace Alejof.Netlify.Models
 {
     public class SubmissionMappingEntity : TableEntity
     {
+        public const string TableName = "NetlifySubmissionMappings";
+
         // PartitionKey: SiteUrl
         // RowKey: FormName
 

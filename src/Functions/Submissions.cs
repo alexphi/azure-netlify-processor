@@ -9,10 +9,12 @@ namespace Alejof.Netlify.Functions
 {
     public static class NetlifySubmissions
     {
+        private const string QueueName = "netlify-submission-info";
+
         [FunctionName("FetchNetlifySubmissionsOnSchedule")]
         public static async Task FetchOnSchedule(
             [TimerTrigger("0 0 12,17,22 * * *")]TimerInfo myTimer, ILogger log,
-            [Queue(Queues.Submissions)]IAsyncCollector<Models.SubmissionData> dataCollector)
+            [Queue(QueueName)]IAsyncCollector<Models.SubmissionData> dataCollector)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
@@ -22,7 +24,7 @@ namespace Alejof.Netlify.Functions
 
         [FunctionName("RouteNetlifySubmissionsOnQueue")]
         public static async Task RouteOnQueue(
-            [QueueTrigger(Queues.Submissions)]Models.SubmissionData data, ILogger log)
+            [QueueTrigger(QueueName)]Models.SubmissionData data, ILogger log)
         {
             await BuildFunctionImpl(log)
                 .RouteSubmission(data);
