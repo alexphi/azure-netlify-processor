@@ -11,7 +11,7 @@ namespace Alejof.Netlify.Functions
     {
         [FunctionName("FetchNetlifySubmissionsOnSchedule")]
         public static async Task FetchOnSchedule(
-            [TimerTrigger("0 0 7,12,17 * * *")]TimerInfo myTimer, ILogger log,
+            [TimerTrigger("0 0 12,17,22 * * *")]TimerInfo myTimer, ILogger log,
             [Queue(Queues.Submissions)]IAsyncCollector<Models.SubmissionData> dataCollector)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
