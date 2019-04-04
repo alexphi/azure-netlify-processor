@@ -1,3 +1,5 @@
+[![Build Status](https://alexphi.visualstudio.com/side-projects/_apis/build/status/alexphi.azure-netlify-processor?branchName=master)](https://alexphi.visualstudio.com/side-projects/_build/latest?definitionId=12&branchName=master)
+
 # azure-netlify-processor
 
 Azure functions to fetch and process Netlify form submissions.
