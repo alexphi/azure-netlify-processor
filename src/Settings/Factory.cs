@@ -16,7 +16,6 @@ namespace Alejof.Netlify.Settings
                 {
                     BaseUrl = getNetlifySetting("BaseUrl"),
                     AccessToken = getNetlifySetting("AccessToken"),
-                    Sites = getNetlifySetting("Sites"),
                 }
             };
         }

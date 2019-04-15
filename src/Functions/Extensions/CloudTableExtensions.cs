@@ -15,5 +15,15 @@ namespace Alejof.Netlify.Functions.Extensions
 
             return result.Result as TEntity;
         }
+
+        public static async Task<List<TEntity>> ScanAsync<TEntity>(this CloudTable table, string partitionKey)
+            where TEntity : TableEntity, new()
+        {
+            var query = new TableQuery<TEntity>()
+                .Where($"PartitionKey eq '{partitionKey}'");
+                
+            var segment = await table.ExecuteQuerySegmentedAsync(query, null);
+            return segment.ToList();
+        }
     }
 }

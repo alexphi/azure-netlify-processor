@@ -4,9 +4,9 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Alejof.Netlify.Models
 {
-    public class SubmissionMappingEntity : TableEntity
+    public class MappingEntity : TableEntity
     {
-        public const string TableName = "NetlifySubmissionMappings";
+        public const string TableName = "NetlifyMappings";
 
         // PartitionKey: SiteUrl
         // RowKey: FormName
