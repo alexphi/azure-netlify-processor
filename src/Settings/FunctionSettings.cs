@@ -11,6 +11,5 @@ namespace Alejof.Netlify.Settings
     {
         public string BaseUrl { get; set; }
         public string AccessToken { get; set; }
-        public string Sites { get; set; }
     }
 }

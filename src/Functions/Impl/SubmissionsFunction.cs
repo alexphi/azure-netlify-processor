@@ -17,6 +17,7 @@ namespace Alejof.Netlify.Functions.Impl
     {
         private readonly ILogger _log;
         private readonly Settings.FunctionSettings _settings;
+        private readonly CloudStorageAccount _storageAccount;
 
         public SubmissionsFunction(
             ILogger log,
@@ -24,19 +25,52 @@ namespace Alejof.Netlify.Functions.Impl
         {
             this._log = log;
             this._settings = netlifySettings;
+
+            this._storageAccount = CloudStorageAccount.Parse(_settings.StorageConnectionString);
         }
 
         public async Task FetchSubmissions(IAsyncCollector<Models.SubmissionData> dataCollector)
         {
+            var sites = await GetNetlifySites();
+            
             // 2. Foreach site, fetch submissions
-            foreach (var site in _settings.Netlify.Sites.Split(',', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var site in sites)
             {
+                _log.LogInformation($"Fetching submissions from Netlify, site {site}");
                 var submissions = await GetNetlifySubmissions(site);
 
                 // 3. Enqueue Submission data
                 foreach (var s in submissions)
                     await dataCollector.AddAsync(s);
             }
+        }
+
+        public async Task RouteSubmission(Models.SubmissionData data)
+        {
+            // Map site url and form name to specialized queue name - if match, then queue info
+            var targetQueue = await GetTargetQueueName(data.SiteUrl, data.FormName);
+            if (string.IsNullOrEmpty(targetQueue))
+            {
+                _log.LogWarning($"No queue mapping found for {data.SiteUrl}/{data.FormName}");
+                return;
+            }
+
+            await EnqueueSubmission(data, targetQueue);
+
+            // Delete submission
+            _log.LogInformation($"Routed submission {data.Id} for {data.SiteUrl}/{data.FormName}. Deleting submission from Netlify");
+            await DeleteNetlifySubmission(data.Id);
+        }
+
+        private async Task<string[]> GetNetlifySites()
+        {
+            var tableClient = _storageAccount.CreateCloudTableClient();
+            var table = tableClient.GetTableReference(Models.SitesEntity.TableName);
+
+            var sites = await table.ScanAsync<Models.SitesEntity>(Models.SitesEntity.DefaultKey);
+            return sites
+                .Select(s => s.RowKey)
+                .ToArray();
         }
 
         private async Task<IEnumerable<Models.SubmissionData>> GetNetlifySubmissions(string site)
@@ -76,30 +110,6 @@ namespace Alejof.Netlify.Functions.Impl
             }
         }
 
-        public async Task RouteSubmission(Models.SubmissionData data)
-        {
-            // Map site url and form name to specialized queue name - if match, then queue info
-            var storageAccount = CloudStorageAccount.Parse(_settings.StorageConnectionString);
-
-            var tableClient = storageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference(Models.SubmissionMappingEntity.TableName);
-            var mapping = await table.RetrieveAsync<Models.SubmissionMappingEntity>(data.SiteUrl, data.FormName);
-
-            if (mapping == null)
-            {
-                _log.LogWarning($"No queue mapping found for {data.SiteUrl}, form {data.FormName}");
-                return;
-            }
-
-            var queueClient = storageAccount.CreateCloudQueueClient();
-            var queue = queueClient.GetQueueReference(mapping.QueueName);
-            await queue.CreateIfNotExistsAsync();
-            await queue.AddMessageAsync(data);
-
-            // Delete submission
-            await DeleteNetlifySubmission(data.Id);
-        }
-
         private async Task DeleteNetlifySubmission(string id)
         {
             try
@@ -113,6 +123,24 @@ namespace Alejof.Netlify.Functions.Impl
             {
                 _log.LogError(ex.Message);
             }
+        }
+        
+        private async Task<string> GetTargetQueueName(string siteUrl, string formName)
+        {
+            var tableClient = _storageAccount.CreateCloudTableClient();
+            var table = tableClient.GetTableReference(Models.MappingEntity.TableName);
+
+            var mapping = await table.RetrieveAsync<Models.MappingEntity>(siteUrl, formName);
+            return mapping?.QueueName;
+        }
+        
+        private async Task EnqueueSubmission(Models.SubmissionData data, string queueName)
+        {
+            var queueClient = _storageAccount.CreateCloudQueueClient();
+            var queue = queueClient.GetQueueReference(queueName);
+
+            await queue.CreateIfNotExistsAsync();
+            await queue.AddMessageAsync(data);
         }
     }
 }
