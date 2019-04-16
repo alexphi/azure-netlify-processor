@@ -16,4 +16,15 @@ A few key values must be available as Application Settings for the functions:
 
 * NetlifySettings_BaseUrl: Netlify API url, currently https://api.netlify.com/api/v1/
 * NetlifySettings_AccessToken
-* NetlifySettings_Sites: a comma-separated list of the sites to fetch submissions from
+
+## Storage resources
+
+The routing configuration and the site list are read from an Azure table called `NetlifyMappings`. It must contain:
+
+* Rows for each netlify site to query submmissions for (either custom domain or site-id/uuid). This values are is used to build the submissions API request.
+  * PartitionKey: 'sites'
+  * RowKey: site domain/uuid
+* Rows for each site/form name combination and the queue name to which the submissions are routed to.
+  * PartitionKey: site name
+  * RowKey: form name
+  * QueueName (property)
