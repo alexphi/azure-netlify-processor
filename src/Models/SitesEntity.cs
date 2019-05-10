@@ -11,5 +11,7 @@ namespace Alejof.Netlify.Models
 
         // PartitionKey: "site"
         // RowKey: Site name
+        
+        public string BuildHookId { get; set; }
     }
 }

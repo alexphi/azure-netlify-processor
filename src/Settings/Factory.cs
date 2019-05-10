@@ -14,8 +14,9 @@ namespace Alejof.Netlify.Settings
 
                 Netlify = new NetlifySettings
                 {
-                    BaseUrl = getNetlifySetting("BaseUrl"),
+                    ApiBaseUrl = getNetlifySetting("ApiBaseUrl"),
                     AccessToken = getNetlifySetting("AccessToken"),
+                    BuildHooksBaseUrl = getNetlifySetting("BuildHooksBaseUrl"),
                 }
             };
         }
