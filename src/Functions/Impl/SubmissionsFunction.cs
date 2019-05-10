@@ -77,7 +77,7 @@ namespace Alejof.Netlify.Functions.Impl
         {
             try
             {
-                var submissions = await _settings.Netlify.BaseUrl
+                var submissions = await _settings.Netlify.ApiBaseUrl
                     .AppendPathSegments("sites", site, "submissions")
                     .SetQueryParam("access_token", _settings.Netlify.AccessToken)
                     .GetJsonListAsync();
@@ -114,7 +114,7 @@ namespace Alejof.Netlify.Functions.Impl
         {
             try
             {
-                var submissions = await _settings.Netlify.BaseUrl
+                var submissions = await _settings.Netlify.ApiBaseUrl
                     .AppendPathSegments("submissions", id)
                     .SetQueryParam("access_token", _settings.Netlify.AccessToken)
                     .DeleteAsync();

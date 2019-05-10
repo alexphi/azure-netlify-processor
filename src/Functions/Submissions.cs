@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Alejof.Netlify.Functions
 {
-    public static class NetlifySubmissions
+    public static class Submissions
     {
         private const string QueueName = "netlify-submission-info";
 
