@@ -69,6 +69,7 @@ namespace Alejof.Netlify.Functions.Impl
 
             var sites = await table.ScanAsync<Models.SitesEntity>(Models.SitesEntity.DefaultKey);
             return sites
+                .Where(s => s.FetchForms)
                 .Select(s => s.RowKey)
                 .ToArray();
         }
@@ -130,7 +131,7 @@ namespace Alejof.Netlify.Functions.Impl
             var tableClient = _storageAccount.CreateCloudTableClient();
             var table = tableClient.GetTableReference(Models.MappingEntity.TableName);
 
-            var mapping = await table.RetrieveAsync<Models.MappingEntity>(siteUrl, formName);
+            var mapping = await table.RetrieveAsync<Models.MappingEntity>(Models.MappingEntity.DefaultKey, $"{siteUrl}_{formName}");
             return mapping?.QueueName;
         }
         
