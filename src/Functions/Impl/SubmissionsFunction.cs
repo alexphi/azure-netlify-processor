@@ -65,11 +65,10 @@ namespace Alejof.Netlify.Functions.Impl
         private async Task<string[]> GetNetlifySites()
         {
             var tableClient = _storageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference(Models.SitesEntity.TableName);
+            var table = tableClient.GetTableReference(Models.FormSiteEntity.TableName);
 
-            var sites = await table.ScanAsync<Models.SitesEntity>(Models.SitesEntity.DefaultKey);
+            var sites = await table.ScanAsync<Models.FormSiteEntity>(Models.FormSiteEntity.DefaultKey);
             return sites
-                .Where(s => s.FetchForms)
                 .Select(s => s.RowKey)
                 .ToArray();
         }
