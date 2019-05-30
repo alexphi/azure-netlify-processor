@@ -41,8 +41,8 @@ namespace Alejof.Netlify.Functions.Impl
             var tableClient = _storageAccount.CreateCloudTableClient();
             var table = tableClient.GetTableReference(Models.MappingEntity.TableName);
 
-            var mapping = await table.RetrieveAsync<Models.SitesEntity>(Models.SitesEntity.DefaultKey, siteUrl);
-            return mapping?.BuildHookId;
+            var mapping = await table.RetrieveAsync<Models.DeploySignalEntity>(Models.DeploySignalEntity.DefaultKey, siteUrl);
+            return mapping?.HookId;
         }
 
         private async Task CallNetlifyBuildHook(string hookId)
