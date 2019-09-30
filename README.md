@@ -2,7 +2,7 @@
 
 # azure-netlify-processor
 
-Azure functions (v2) to fetch and process Netlify form submissions (https://www.netlify.com/docs/form-handling/). Instead of setting up notifications in the Netlify site, these functions periodically fetch the received submissions and process them.
+Azure Function App (v2) to fetch and process Netlify form submissions (https://www.netlify.com/docs/form-handling/). Instead of setting up notifications in the Netlify site, these functions periodically fetch the received submissions and process them.
 
 Each submission is routed to an Azure queue, which is determined using the site url and the form name. The mapping configuration is read from a table in AzureTableStorage.
 
@@ -22,9 +22,9 @@ A few key values must be available as Application Settings for the functions:
 The routing configuration and the site list are read from an Azure table called `NetlifyMappings`. It must contain:
 
 * Rows for each netlify site to query submmissions for (either custom domain or site-id/uuid). This values are is used to build the submissions API request.
-  * PartitionKey: 'sites'
-  * RowKey: site domain/uuid
+  * PartitionKey: 'forms-site'
+  * RowKey: site domain OR uuid
 * Rows for each site/form name combination and the queue name to which the submissions are routed to.
-  * PartitionKey: site name
-  * RowKey: form name
+  * PartitionKey: 'forms'
+  * RowKey: "{site domain OR uuid}_{form name}"
   * QueueName (property)
