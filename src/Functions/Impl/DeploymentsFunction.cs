@@ -8,14 +8,14 @@ using Microsoft.WindowsAzure.Storage;
 
 namespace Alejof.Netlify.Functions.Impl
 {
-    public class DeploymentsFunction
+    public class DeploymentsFunction : IDeploymentsFunction
     {
         private readonly ILogger _log;
         private readonly Settings.FunctionSettings _settings;
         private readonly CloudStorageAccount _storageAccount;
 
         public DeploymentsFunction(
-            ILogger log,
+            ILogger<DeploymentsFunction> log,
             Settings.FunctionSettings netlifySettings)
         {
             this._log = log;

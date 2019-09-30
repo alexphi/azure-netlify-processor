@@ -13,14 +13,14 @@ using Alejof.Netlify.Functions.Extensions;
 
 namespace Alejof.Netlify.Functions.Impl
 {
-    public class SubmissionsFunction
+    public class SubmissionsFunction : ISubmissionsFunction
     {
         private readonly ILogger _log;
         private readonly Settings.FunctionSettings _settings;
         private readonly CloudStorageAccount _storageAccount;
 
         public SubmissionsFunction(
-            ILogger log,
+            ILogger<SubmissionsFunction> log,
             Settings.FunctionSettings netlifySettings)
         {
             this._log = log;
