@@ -31,7 +31,7 @@ namespace Alejof.Netlify.Functions.Impl
 
         public async Task FetchSubmissions(IAsyncCollector<Models.SubmissionData> dataCollector)
         {
-            var sites = await GetNetlifySites();
+            var sites = await GetSiteNames();
             
             // 2. Foreach site, fetch submissions
             foreach (var site in sites)
@@ -48,29 +48,40 @@ namespace Alejof.Netlify.Functions.Impl
         public async Task RouteSubmission(Models.SubmissionData data)
         {
             // Map site url and form name to specialized queue name - if match, then queue info
-            var targetQueue = await GetTargetQueueName(data.SiteUrl, data.FormName);
+            var targetQueue = await GetQueueName(data.SiteUrl);
             if (string.IsNullOrEmpty(targetQueue))
             {
-                _log.LogWarning($"No queue mapping found for {data.SiteUrl}/{data.FormName}");
+                _log.LogWarning($"No queue mapping found for {data.SiteUrl}");
                 return;
             }
 
             await EnqueueSubmission(data, targetQueue);
 
             // Delete submission
-            _log.LogInformation($"Routed submission {data.Id} for {data.SiteUrl}/{data.FormName}. Deleting submission from Netlify");
+            _log.LogInformation($"Routed submission {data.Id} for {data.SiteUrl}. Deleting submission from Netlify");
             await DeleteNetlifySubmission(data.Id);
         }
 
-        private async Task<string[]> GetNetlifySites()
+        private async Task<string[]> GetSiteNames()
         {
-            var tableClient = _storageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference(Models.FormSiteEntity.TableName);
+            var table = _storageAccount
+                .CreateCloudTableClient()
+                .GetTableReference(Models.TableStorage.FormSubmissionsEntity.TableName);
 
-            var sites = await table.ScanAsync<Models.FormSiteEntity>(Models.FormSiteEntity.DefaultKey);
-            return sites
+            var entities = await table.ScanAsync<Models.TableStorage.FormSubmissionsEntity>(Models.TableStorage.FormSubmissionsEntity.DefaultKey);
+            return entities
                 .Select(s => s.RowKey)
                 .ToArray();
+        }
+
+        private async Task<string> GetQueueName(string siteUrl)
+        {
+            var table = _storageAccount
+                .CreateCloudTableClient()
+                .GetTableReference(Models.TableStorage.FormSubmissionsEntity.TableName);
+
+            var entity = await table.RetrieveAsync<Models.TableStorage.FormSubmissionsEntity>(Models.TableStorage.FormSubmissionsEntity.DefaultKey, siteUrl);
+            return entity?.QueueName;
         }
 
         private async Task<IEnumerable<Models.SubmissionData>> GetNetlifySubmissions(string site)
@@ -123,15 +134,6 @@ namespace Alejof.Netlify.Functions.Impl
             {
                 _log.LogError(ex.Message);
             }
-        }
-        
-        private async Task<string> GetTargetQueueName(string siteUrl, string formName)
-        {
-            var tableClient = _storageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference(Models.MappingEntity.TableName);
-
-            var mapping = await table.RetrieveAsync<Models.MappingEntity>(Models.MappingEntity.DefaultKey, $"{siteUrl}_{formName}");
-            return mapping?.QueueName;
         }
         
         private async Task EnqueueSubmission(Models.SubmissionData data, string queueName)

@@ -38,11 +38,12 @@ namespace Alejof.Netlify.Functions.Impl
 
         private async Task<string> GetDeployHookId(string siteUrl)
         {
-            var tableClient = _storageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference(Models.MappingEntity.TableName);
+            var table = _storageAccount
+                .CreateCloudTableClient()
+                .GetTableReference(Models.TableStorage.DeploySignalEntity.TableName);
 
-            var mapping = await table.RetrieveAsync<Models.DeploySignalEntity>(Models.DeploySignalEntity.DefaultKey, siteUrl);
-            return mapping?.HookId;
+            var entity = await table.RetrieveAsync<Models.TableStorage.DeploySignalEntity>(Models.TableStorage.DeploySignalEntity.DefaultKey, siteUrl);
+            return entity?.HookId;
         }
 
         private async Task CallNetlifyBuildHook(string hookId)
