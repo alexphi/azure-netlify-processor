@@ -11,6 +11,7 @@ namespace Alejof.Netlify.Settings
             return new FunctionSettings
             {
                 StorageConnectionString = GetSetting("AzureWebJobsStorage"),
+                DefaultQueueName = "netlify-contact-info",
 
                 Netlify = new NetlifySettings
                 {

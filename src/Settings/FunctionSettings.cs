@@ -3,6 +3,7 @@ namespace Alejof.Netlify.Settings
     public class FunctionSettings
     {
         public string StorageConnectionString { get; set; }
+        public string DefaultQueueName { get; set; }
 
         public NetlifySettings Netlify { get; set; }
     }

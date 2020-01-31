@@ -81,7 +81,7 @@ namespace Alejof.Netlify.Functions.Impl
                 .GetTableReference(Models.TableStorage.FormSubmissionsEntity.TableName);
 
             var entity = await table.RetrieveAsync<Models.TableStorage.FormSubmissionsEntity>(Models.TableStorage.FormSubmissionsEntity.DefaultKey, siteUrl);
-            return entity?.QueueName;
+            return entity?.QueueName ?? _settings.DefaultQueueName;
         }
 
         private async Task<IEnumerable<Models.SubmissionData>> GetNetlifySubmissions(string site)
