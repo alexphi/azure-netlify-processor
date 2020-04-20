@@ -18,7 +18,6 @@ namespace Alejof.Netlify.Functions.Impl
     {
         private readonly ILogger _log;
         private readonly Settings.FunctionSettings _settings;
-        private readonly CloudStorageAccount _storageAccount;
 
         public SubmissionsFunction(
             ILogger<SubmissionsFunction> log,
@@ -26,17 +25,15 @@ namespace Alejof.Netlify.Functions.Impl
         {
             this._log = log;
             this._settings = netlifySettings;
-
-            this._storageAccount = CloudStorageAccount.Parse(_settings.StorageConnectionString);
         }
 
-        private CloudTable GetMappingsTable() => _storageAccount
-                .CreateCloudTableClient()
-                .GetTableReference(Models.TableStorage.MappingsEntity.TableName);
+        private CloudTable GetMappingsTable() => CloudStorageAccount.Parse(_settings.StorageConnectionString)
+            .CreateCloudTableClient()
+            .GetTableReference(Models.TableStorage.MappingsEntity.TableName);
 
-        private CloudQueue GetQueue(string name) => _storageAccount
-                .CreateCloudQueueClient()
-                .GetQueueReference(name.Trim());
+        private CloudQueue GetQueue(string name) => CloudStorageAccount.Parse(_settings.HostingConnectionString)
+            .CreateCloudQueueClient()
+            .GetQueueReference(name.Trim());
 
         public async Task FetchSubmissions(IAsyncCollector<Models.SubmissionData> dataCollector)
         {
