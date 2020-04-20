@@ -36,7 +36,7 @@ namespace Alejof.Netlify.Functions.Impl
 
         private CloudQueue GetQueue(string name) => _storageAccount
                 .CreateCloudQueueClient()
-                .GetQueueReference(name);
+                .GetQueueReference(name.Trim());
 
         public async Task FetchSubmissions(IAsyncCollector<Models.SubmissionData> dataCollector)
         {
