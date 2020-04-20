@@ -10,6 +10,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Alejof.Netlify.Functions.Extensions;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Alejof.Netlify.Functions.Impl
 {
@@ -28,6 +29,14 @@ namespace Alejof.Netlify.Functions.Impl
 
             this._storageAccount = CloudStorageAccount.Parse(_settings.StorageConnectionString);
         }
+
+        private CloudTable GetMappingsTable() => _storageAccount
+                .CreateCloudTableClient()
+                .GetTableReference(Models.TableStorage.MappingsEntity.TableName);
+
+        private CloudQueue GetQueue(string name) => _storageAccount
+                .CreateCloudQueueClient()
+                .GetQueueReference(name);
 
         public async Task FetchSubmissions(IAsyncCollector<Models.SubmissionData> dataCollector)
         {
@@ -48,14 +57,15 @@ namespace Alejof.Netlify.Functions.Impl
         public async Task RouteSubmission(Models.SubmissionData data)
         {
             // Map site url and form name to specialized queue name - if match, then queue info
-            var targetQueue = await GetQueueName(data.SiteUrl);
-            if (string.IsNullOrEmpty(targetQueue))
+            var targetQueues = await GetQueueNames(data.SiteUrl, data.FormName);
+            if (!targetQueues.Any())
             {
                 _log.LogWarning($"No queue mapping found for {data.SiteUrl}");
                 return;
             }
 
-            await EnqueueSubmission(data, targetQueue);
+            foreach (var queueName in targetQueues)
+                await EnqueueSubmission(data, queueName);
 
             // Delete submission
             _log.LogInformation($"Routed submission {data.Id} for {data.SiteUrl}. Deleting submission from Netlify");
@@ -64,24 +74,24 @@ namespace Alejof.Netlify.Functions.Impl
 
         private async Task<string[]> GetSiteNames()
         {
-            var table = _storageAccount
-                .CreateCloudTableClient()
-                .GetTableReference(Models.TableStorage.FormSubmissionsEntity.TableName);
+            var mappings = await GetMappingsTable()
+                .ScanAsync<Models.TableStorage.MappingsEntity>(Models.TableStorage.MappingsEntity.DefaultKey);
 
-            var entities = await table.ScanAsync<Models.TableStorage.FormSubmissionsEntity>(Models.TableStorage.FormSubmissionsEntity.DefaultKey);
-            return entities
-                .Select(s => s.RowKey)
+            return mappings
+                .Select(m => m.SiteName)
+                .Distinct()
                 .ToArray();
         }
 
-        private async Task<string> GetQueueName(string siteUrl)
+        private async Task<string[]> GetQueueNames(string siteUrl, string formName)
         {
-            var table = _storageAccount
-                .CreateCloudTableClient()
-                .GetTableReference(Models.TableStorage.FormSubmissionsEntity.TableName);
-
-            var entity = await table.RetrieveAsync<Models.TableStorage.FormSubmissionsEntity>(Models.TableStorage.FormSubmissionsEntity.DefaultKey, siteUrl);
-            return entity?.QueueName ?? _settings.DefaultQueueName;
+            var mappings = await GetMappingsTable()
+                .ScanAsync<Models.TableStorage.MappingsEntity>(Models.TableStorage.MappingsEntity.DefaultKey);
+                
+            return mappings
+                .Where(m => m.SiteName == siteUrl && (m.FormName == formName || m.FormName == "*"))
+                .SelectMany(m => m.QueueNames.Split(",", StringSplitOptions.RemoveEmptyEntries))
+                .ToArray();
         }
 
         private async Task<IEnumerable<Models.SubmissionData>> GetNetlifySubmissions(string site)
@@ -138,8 +148,7 @@ namespace Alejof.Netlify.Functions.Impl
         
         private async Task EnqueueSubmission(Models.SubmissionData data, string queueName)
         {
-            var queueClient = _storageAccount.CreateCloudQueueClient();
-            var queue = queueClient.GetQueueReference(queueName);
+            var queue = GetQueue(queueName);
 
             await queue.CreateIfNotExistsAsync();
             await queue.AddMessageAsync(data);
