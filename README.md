@@ -39,7 +39,7 @@ Mappings to Netlify sites and some specific settings are read from an Azure Stor
 Contains different data about the sites to query submmissions form and how those submissions are routed.
 
 * PartitionKey: `"submission-routing"`
-* RowKey: `{site identifier}-{formName}`
+* RowKey: `{site identifier}-{form name}`
   * Either the custom domain or site-id/uuid can be used as the identifier.
   * To apply the same configuration for all forms within a site, use `{side id}-*`.
 * QueueNames: comma-separated names of the queues to route the submission to.
