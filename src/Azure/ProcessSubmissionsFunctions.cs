@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Alejof.Netlify.Functions.Extensions;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
@@ -21,7 +22,7 @@ namespace Alejof.Netlify.Azure
         [FunctionName("FetchNetlifySubmissionsOnSchedule")]
         public async Task FetchOnSchedule(
             [TimerTrigger("0 0 * * * *")]TimerInfo myTimer, ILogger log,
-            [Queue(QueueName, Connection = nameof(Settings.FunctionSettings.StorageConnectionString))]IAsyncCollector<Models.SubmissionData> dataCollector)
+            [Queue(QueueName, Connection = nameof(Storage.ConnectionStringSetting))]IAsyncCollector<Models.SubmissionData> dataCollector)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}. Schedule: {myTimer.ScheduleStatus.Next}");
 
@@ -30,7 +31,7 @@ namespace Alejof.Netlify.Azure
 
         [FunctionName("RouteNetlifySubmissionsOnQueue")]
         public async Task RouteOnQueue(
-            [QueueTrigger(QueueName, Connection = nameof(Settings.FunctionSettings.StorageConnectionString))]Models.SubmissionData data, ILogger log)
+            [QueueTrigger(QueueName, Connection = nameof(Storage.ConnectionStringSetting))]Models.SubmissionData data, ILogger log)
         {
             log.LogInformation($"{nameof(ProcessSubmissionsFunctions)}.{nameof(RouteOnQueue)} function method executing.");
             

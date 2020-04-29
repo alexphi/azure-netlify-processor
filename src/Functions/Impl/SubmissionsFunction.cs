@@ -17,23 +17,24 @@ namespace Alejof.Netlify.Functions.Impl
     public class SubmissionsFunction : ISubmissionsFunction
     {
         private readonly ILogger _log;
-        private readonly Settings.FunctionSettings _settings;
+        private readonly Settings.NetlifySettings _settings;
+        private readonly CloudTableClient _cloudTableClient;
+        private readonly CloudQueueClient _cloudQueueClient;
 
         public SubmissionsFunction(
             ILogger<SubmissionsFunction> log,
-            Settings.FunctionSettings netlifySettings)
+            Settings.NetlifySettings netlifySettings,
+            CloudTableClient cloudTableClient,
+            CloudQueueClient cloudQueueClient)
         {
-            this._log = log;
-            this._settings = netlifySettings;
+            _log = log;
+            _settings = netlifySettings;
+            _cloudTableClient = cloudTableClient;
+            _cloudQueueClient = cloudQueueClient;
         }
 
-        private CloudTable GetMappingsTable() => CloudStorageAccount.Parse(_settings.StorageConnectionString)
-            .CreateCloudTableClient()
-            .GetTableReference(Models.TableStorage.MappingsEntity.TableName);
-
-        private CloudQueue GetQueue(string name) => CloudStorageAccount.Parse(_settings.HostingConnectionString)
-            .CreateCloudQueueClient()
-            .GetQueueReference(name.Trim());
+        private CloudTable GetMappingsTable() => _cloudTableClient.GetTableReference(Models.TableStorage.MappingsEntity.TableName);
+        private CloudQueue GetQueue(string name) => _cloudQueueClient.GetQueueReference(name.Trim());
 
         public async Task FetchSubmissions(IAsyncCollector<Models.SubmissionData> dataCollector)
         {
@@ -71,8 +72,10 @@ namespace Alejof.Netlify.Functions.Impl
 
         private async Task<string[]> GetSiteNames()
         {
-            var mappings = await GetMappingsTable()
-                .ScanAsync<Models.TableStorage.MappingsEntity>(Models.TableStorage.MappingsEntity.DefaultKey);
+            var table = GetMappingsTable();
+            await table.CreateIfNotExistsAsync();
+
+            var mappings = await table.ScanAsync<Models.TableStorage.MappingsEntity>(Models.TableStorage.MappingsEntity.DefaultKey);
 
             return mappings
                 .Select(m => m.SiteName)
@@ -82,8 +85,10 @@ namespace Alejof.Netlify.Functions.Impl
 
         private async Task<string[]> GetQueueNames(string siteUrl, string formName)
         {
-            var mappings = await GetMappingsTable()
-                .ScanAsync<Models.TableStorage.MappingsEntity>(Models.TableStorage.MappingsEntity.DefaultKey);
+            var table = GetMappingsTable();
+            await table.CreateIfNotExistsAsync();
+
+            var mappings = await table.ScanAsync<Models.TableStorage.MappingsEntity>(Models.TableStorage.MappingsEntity.DefaultKey);
                 
             return mappings
                 .Where(m => m.SiteName == siteUrl && (m.FormName == formName || m.FormName == "*"))
@@ -95,9 +100,9 @@ namespace Alejof.Netlify.Functions.Impl
         {
             try
             {
-                var submissions = await _settings.Netlify.ApiBaseUrl
+                var submissions = await _settings.ApiBaseUrl
                     .AppendPathSegments("sites", site, "submissions")
-                    .SetQueryParam("access_token", _settings.Netlify.AccessToken)
+                    .SetQueryParam("access_token", _settings.AccessToken)
                     .GetJsonListAsync();
 
                 return submissions
@@ -132,9 +137,9 @@ namespace Alejof.Netlify.Functions.Impl
         {
             try
             {
-                var submissions = await _settings.Netlify.ApiBaseUrl
+                var submissions = await _settings.ApiBaseUrl
                     .AppendPathSegments("submissions", id)
-                    .SetQueryParam("access_token", _settings.Netlify.AccessToken)
+                    .SetQueryParam("access_token", _settings.AccessToken)
                     .DeleteAsync();
             }
             catch (FlurlHttpException ex)

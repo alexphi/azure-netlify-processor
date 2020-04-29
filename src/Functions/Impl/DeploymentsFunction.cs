@@ -5,23 +5,24 @@ using Flurl;
 using Flurl.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Alejof.Netlify.Functions.Impl
 {
     public class DeploymentsFunction : IDeploymentsFunction
     {
         private readonly ILogger _log;
-        private readonly Settings.FunctionSettings _settings;
-        private readonly CloudStorageAccount _storageAccount;
+        private readonly Settings.NetlifySettings _settings;
+        private readonly CloudTableClient _cloudTableClient;
 
         public DeploymentsFunction(
             ILogger<DeploymentsFunction> log,
-            Settings.FunctionSettings netlifySettings)
+            Settings.NetlifySettings netlifySettings,
+            CloudTableClient cloudTableClient)
         {
-            this._log = log;
-            this._settings = netlifySettings;
-
-            this._storageAccount = CloudStorageAccount.Parse(_settings.StorageConnectionString);
+            _log = log;
+            _settings = netlifySettings;
+            _cloudTableClient = cloudTableClient;
         }
         
         public async Task DeploySite(string deploySignal)
@@ -38,9 +39,8 @@ namespace Alejof.Netlify.Functions.Impl
 
         private async Task<string> GetDeployHookId(string siteUrl)
         {
-            var table = _storageAccount
-                .CreateCloudTableClient()
-                .GetTableReference(Models.TableStorage.DeploySignalEntity.TableName);
+            var table = _cloudTableClient.GetTableReference(Models.TableStorage.DeploySignalEntity.TableName);
+            await table.CreateIfNotExistsAsync();
 
             var entity = await table.RetrieveAsync<Models.TableStorage.DeploySignalEntity>(Models.TableStorage.DeploySignalEntity.DefaultKey, siteUrl);
             return entity?.HookId;
@@ -50,7 +50,7 @@ namespace Alejof.Netlify.Functions.Impl
         {
             try
             {
-                var submissions = await _settings.Netlify.BuildHooksBaseUrl
+                var submissions = await _settings.BuildHooksBaseUrl
                     .AppendPathSegments(hookId)
                     .PostAsync(null);
             }

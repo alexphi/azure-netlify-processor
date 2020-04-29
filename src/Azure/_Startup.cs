@@ -1,4 +1,5 @@
 using System;
+using Alejof.Netlify.Functions.Extensions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,7 @@ namespace Alejof.Netlify.Azure
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            builder.Services.AddStorage();
             builder.Services.AddScoped(s => Settings.Factory.Build());
 
             builder.Services.AddScoped<Functions.ISubmissionsFunction, Functions.Impl.SubmissionsFunction>();

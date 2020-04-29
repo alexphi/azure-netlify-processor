@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Alejof.Netlify.Functions.Extensions;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
@@ -21,7 +22,7 @@ namespace Alejof.Netlify.Azure
 
         [FunctionName("DeployNetlifySiteOnQueue")]
         public async Task Run(
-            [QueueTrigger(QueueName, Connection = nameof(Settings.FunctionSettings.StorageConnectionString))]string deploySignal, ILogger log)
+            [QueueTrigger(QueueName, Connection = nameof(Storage.ConnectionStringSetting))]string deploySignal, ILogger log)
         {
             log.LogInformation($"{nameof(DeploySiteFunction)}.{nameof(Run)} function method executing.");
 
