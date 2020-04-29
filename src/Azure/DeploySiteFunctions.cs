@@ -21,7 +21,7 @@ namespace Alejof.Netlify.Azure
 
         [FunctionName("DeployNetlifySiteOnQueue")]
         public async Task Run(
-            [QueueTrigger(QueueName)]string deploySignal, ILogger log)
+            [QueueTrigger(QueueName, Connection = nameof(Settings.FunctionSettings.StorageConnectionString))]string deploySignal, ILogger log)
         {
             log.LogInformation($"{nameof(DeploySiteFunction)}.{nameof(Run)} function method executing.");
 

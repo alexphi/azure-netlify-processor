@@ -11,13 +11,13 @@ namespace Alejof.Netlify.Settings
             return new FunctionSettings
             {
                 HostingConnectionString = GetSetting("AzureWebJobsStorage"),
-                StorageConnectionString = GetSetting("StorageConnectionString"),
+                StorageConnectionString = GetSetting(nameof(FunctionSettings.StorageConnectionString)),
 
                 Netlify = new NetlifySettings
                 {
-                    ApiBaseUrl = getNetlifySetting("ApiBaseUrl"),
-                    AccessToken = getNetlifySetting("AccessToken"),
-                    BuildHooksBaseUrl = getNetlifySetting("BuildHooksBaseUrl"),
+                    ApiBaseUrl = getNetlifySetting(nameof(NetlifySettings.ApiBaseUrl)),
+                    AccessToken = getNetlifySetting(nameof(NetlifySettings.AccessToken)),
+                    BuildHooksBaseUrl = getNetlifySetting(nameof(NetlifySettings.BuildHooksBaseUrl)),
                 }
             };
         }
