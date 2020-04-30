@@ -21,7 +21,7 @@ namespace Alejof.Netlify.Azure
 
         [FunctionName("FetchNetlifySubmissionsOnSchedule")]
         public async Task FetchOnSchedule(
-            [TimerTrigger("0 0 * * * *")]TimerInfo myTimer, ILogger log,
+            [TimerTrigger("0 */10 * * * *")]TimerInfo myTimer, ILogger log,
             [Queue(QueueName, Connection = nameof(Storage.ConnectionStringSetting))]IAsyncCollector<Models.SubmissionData> dataCollector)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}. Schedule: {myTimer.ScheduleStatus.Next}");
