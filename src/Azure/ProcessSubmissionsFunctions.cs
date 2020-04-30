@@ -22,7 +22,7 @@ namespace Alejof.Netlify.Azure
         [FunctionName("FetchNetlifySubmissionsOnSchedule")]
         public async Task FetchOnSchedule(
             [TimerTrigger("0 */10 * * * *")]TimerInfo myTimer, ILogger log,
-            [Queue(QueueName, Connection = nameof(Storage.ConnectionStringSetting))]IAsyncCollector<Models.SubmissionData> dataCollector)
+            [Queue(QueueName, Connection = Storage.ConnectionStringSetting)]IAsyncCollector<Models.SubmissionData> dataCollector)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}. Schedule: {myTimer.ScheduleStatus.Next}");
 
@@ -31,7 +31,7 @@ namespace Alejof.Netlify.Azure
 
         [FunctionName("RouteNetlifySubmissionsOnQueue")]
         public async Task RouteOnQueue(
-            [QueueTrigger(QueueName, Connection = nameof(Storage.ConnectionStringSetting))]Models.SubmissionData data, ILogger log)
+            [QueueTrigger(QueueName, Connection = Storage.ConnectionStringSetting)]Models.SubmissionData data, ILogger log)
         {
             log.LogInformation($"{nameof(ProcessSubmissionsFunctions)}.{nameof(RouteOnQueue)} function method executing.");
             
